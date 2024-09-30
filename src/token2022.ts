@@ -14,6 +14,7 @@ import {
   TokenMetadata,
 } from "@solana/spl-token-metadata";
 import {
+  clusterApiUrl,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
@@ -22,6 +23,9 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 if (!fs.existsSync("key.json")) {
   const pair = Keypair.generate();
@@ -42,8 +46,8 @@ const mint_pair = Keypair.fromSecretKey(
 );
 
 const main = async () => {
-  // const url = clusterApiUrl("devnet");
-  const url = "http://localhost:8899";
+  const url = clusterApiUrl(process.env.network as any);
+  // const url = "http://localhost:8899";
   const connection = new Connection(url, "confirmed");
 
   await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL * 50);

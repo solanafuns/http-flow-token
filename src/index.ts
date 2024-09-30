@@ -1,15 +1,22 @@
 //  https://github.com/solana-labs/solana-program-library.git
 // cd solana-program-library/token/js 源码部分
 
-import { Connection, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import {
+  clusterApiUrl,
+  Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
 import {
   createMint,
   getMint,
   getOrCreateAssociatedTokenAccount,
   mintTo,
 } from "@solana/spl-token";
-
+import dotenv from "dotenv";
 import fs from "fs";
+
+dotenv.config();
 
 if (!fs.existsSync("key.json")) {
   const pair = Keypair.generate();
@@ -30,8 +37,8 @@ const mint_pair = Keypair.fromSecretKey(
 );
 
 async function main() {
-  // const url = clusterApiUrl("devnet");
-  const url = "http://127.0.0.1:8899";
+  const url = clusterApiUrl(process.env.network as any);
+  // const url = "http://127.0.0.1:8899";
 
   // 创建连接到本地 Solana 节点
   const connection = new Connection(url, {
