@@ -7,7 +7,6 @@ import {
   getMint,
   getOrCreateAssociatedTokenAccount,
   mintTo,
-  TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
 
 import fs from "fs";
@@ -31,8 +30,6 @@ const mint_pair = Keypair.fromSecretKey(
 );
 
 async function main() {
-  console.log("payer address : ", payer.publicKey.toBase58());
-
   // const url = clusterApiUrl("devnet");
   const url = "http://127.0.0.1:8899";
 
@@ -42,14 +39,18 @@ async function main() {
     confirmTransactionInitialTimeout: 60000, // 设置超时时间为 60 秒
   });
 
+  console.log("payer address : ", payer.publicKey.toBase58());
+
   const balance = await connection.getBalance(payer.publicKey);
   if (balance < 2 * LAMPORTS_PER_SOL) {
     const tx = await connection.requestAirdrop(
       payer.publicKey,
       2 * LAMPORTS_PER_SOL
     );
-    // BlockheightBasedTransactionConfirmationStrategy
-    await connection.confirmTransaction(tx);
+    await connection.confirmTransaction({
+      signature: tx,
+      ...(await connection.getLatestBlockhash()),
+    });
   } else {
     console.log("balance is enough", balance / LAMPORTS_PER_SOL);
   }
@@ -62,21 +63,12 @@ async function main() {
     mint_pair.publicKey,
     mint_pair.publicKey,
     9,
-    Keypair.generate(),
-    {
-      commitment: "finalized",
-    },
-    TOKEN_2022_PROGRAM_ID
+    Keypair.generate()
   );
 
   console.log("mint public key", mint.toBase58());
 
-  const info = await getMint(
-    connection,
-    mint,
-    "finalized",
-    TOKEN_2022_PROGRAM_ID
-  );
+  const info = await getMint(connection, mint);
   console.log("mint info : ", info);
 
   // this will create a new account for the token called ata
@@ -84,13 +76,7 @@ async function main() {
     connection,
     payer,
     mint,
-    payer.publicKey,
-    true,
-    "finalized",
-    {
-      commitment: "finalized",
-    },
-    TOKEN_2022_PROGRAM_ID
+    payer.publicKey
   );
   console.log("current spl token account : ", current.address.toBase58());
 
@@ -101,22 +87,9 @@ async function main() {
     mint,
     current.address,
     mint_pair,
-    1000000,
-    [],
-    {
-      commitment: "finalized",
-    },
-    TOKEN_2022_PROGRAM_ID
+    1000000
   );
   console.log(tx);
-
-  const mintAccount = await getMint(
-    connection,
-    mint,
-    "finalized",
-    TOKEN_2022_PROGRAM_ID
-  );
-  console.log(mintAccount);
 }
 
 main().catch((err) => {
