@@ -50,7 +50,19 @@ const main = async () => {
   // const url = "http://localhost:8899";
   const connection = new Connection(url, "confirmed");
 
-  await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL * 50);
+  const balance = await connection.getBalance(payer.publicKey);
+  if (balance < 2 * LAMPORTS_PER_SOL) {
+    const tx = await connection.requestAirdrop(
+      payer.publicKey,
+      3 * LAMPORTS_PER_SOL
+    );
+    await connection.confirmTransaction({
+      signature: tx,
+      ...(await connection.getLatestBlockhash()),
+    });
+  } else {
+    console.log("balance is enough", balance / LAMPORTS_PER_SOL);
+  }
 
   const metaData: TokenMetadata = {
     updateAuthority: mint_pair.publicKey,

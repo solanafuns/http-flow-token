@@ -42,7 +42,7 @@ async function main() {
 
   // 创建连接到本地 Solana 节点
   const connection = new Connection(url, {
-    commitment: "finalized",
+    commitment: "confirmed",
     confirmTransactionInitialTimeout: 60000, // 设置超时时间为 60 秒
   });
 
@@ -52,7 +52,7 @@ async function main() {
   if (balance < 2 * LAMPORTS_PER_SOL) {
     const tx = await connection.requestAirdrop(
       payer.publicKey,
-      2 * LAMPORTS_PER_SOL
+      3 * LAMPORTS_PER_SOL
     );
     await connection.confirmTransaction({
       signature: tx,
