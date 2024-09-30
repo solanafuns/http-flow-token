@@ -1,8 +1,10 @@
 import {
   createInitializeMetadataPointerInstruction,
   createInitializeMintInstruction,
+  createMintToInstruction,
   ExtensionType,
   getMintLen,
+  getOrCreateAssociatedTokenAccount,
   LENGTH_SIZE,
   TOKEN_2022_PROGRAM_ID,
   TYPE_SIZE,
@@ -124,12 +126,27 @@ const main = async () => {
     value: metaData.additionalMetadata[0][1],
   });
 
+  const spl_token_account = await getOrCreateAssociatedTokenAccount(
+    connection,
+    payer,
+    mint_pair.publicKey,
+    payer.publicKey
+  );
+
+  const mintToTx = createMintToInstruction(
+    mint_pair.publicKey,
+    spl_token_account.address,
+    payer.publicKey,
+    1000
+  );
+
   const transaction = new Transaction().add(
     createAccontIx,
     initializeMetadataIx,
     initialzeMintIx,
     initialMetadataIx,
-    updateMetaField
+    updateMetaField,
+    mintToTx
   );
 
   const sig = await sendAndConfirmTransaction(connection, transaction, [
