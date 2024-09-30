@@ -48,8 +48,11 @@ const mint_pair = Keypair.fromSecretKey(
 );
 
 const main = async () => {
-  const url = clusterApiUrl(process.env.network as any);
-  // const url = "http://localhost:8899";
+  let url = "http://localhost:8899";
+  if (process.env.network != "local") {
+    url = clusterApiUrl(process.env.network as any);
+  }
+
   const connection = new Connection(url, "confirmed");
 
   const balance = await connection.getBalance(payer.publicKey);
@@ -126,6 +129,21 @@ const main = async () => {
     value: metaData.additionalMetadata[0][1],
   });
 
+  const transaction = new Transaction().add(
+    createAccontIx,
+    initializeMetadataIx,
+    initialzeMintIx,
+    initialMetadataIx,
+    updateMetaField
+  );
+
+  const sig = await sendAndConfirmTransaction(connection, transaction, [
+    payer,
+    mint_pair,
+  ]);
+
+  console.log("sig: ", sig);
+
   const spl_token_account = await getOrCreateAssociatedTokenAccount(
     connection,
     payer,
@@ -139,30 +157,23 @@ const main = async () => {
     TOKEN_2022_PROGRAM_ID
   );
 
-  const mintToTx = createMintToInstruction(
-    mint_pair.publicKey,
-    spl_token_account.address,
-    payer.publicKey,
-    1000,
-    [],
-    TOKEN_2022_PROGRAM_ID
+  console.log(
+    "mint sig: ",
+    await sendAndConfirmTransaction(
+      connection,
+      new Transaction().add(
+        createMintToInstruction(
+          mint_pair.publicKey,
+          spl_token_account.address,
+          payer.publicKey,
+          1000,
+          [],
+          TOKEN_2022_PROGRAM_ID
+        )
+      ),
+      [payer, mint_pair]
+    )
   );
-
-  const transaction = new Transaction().add(
-    createAccontIx,
-    initializeMetadataIx,
-    initialzeMintIx,
-    initialMetadataIx,
-    updateMetaField,
-    mintToTx
-  );
-
-  const sig = await sendAndConfirmTransaction(connection, transaction, [
-    payer,
-    mint_pair,
-  ]);
-
-  console.log("sig: ", sig);
 };
 
 main()

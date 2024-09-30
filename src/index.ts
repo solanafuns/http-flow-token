@@ -37,8 +37,10 @@ const mint_pair = Keypair.fromSecretKey(
 );
 
 async function main() {
-  const url = clusterApiUrl(process.env.network as any);
-  // const url = "http://127.0.0.1:8899";
+  let url = "http://localhost:8899";
+  if (process.env.network != "local") {
+    url = clusterApiUrl(process.env.network as any);
+  }
 
   // 创建连接到本地 Solana 节点
   const connection = new Connection(url, {
