@@ -130,14 +130,22 @@ const main = async () => {
     connection,
     payer,
     mint_pair.publicKey,
-    payer.publicKey
+    payer.publicKey,
+    true,
+    "confirmed",
+    {
+      commitment: "confirmed",
+    },
+    TOKEN_2022_PROGRAM_ID
   );
 
   const mintToTx = createMintToInstruction(
     mint_pair.publicKey,
     spl_token_account.address,
     payer.publicKey,
-    1000
+    1000,
+    [],
+    TOKEN_2022_PROGRAM_ID
   );
 
   const transaction = new Transaction().add(
