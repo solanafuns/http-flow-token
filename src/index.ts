@@ -7,6 +7,7 @@ import {
   getMint,
   getOrCreateAssociatedTokenAccount,
   mintTo,
+  TOKEN_2022_PROGRAM_ID,
 } from "@solana/spl-token";
 
 import fs from "fs";
@@ -60,12 +61,22 @@ async function main() {
     payer,
     mint_pair.publicKey,
     mint_pair.publicKey,
-    9
+    9,
+    Keypair.generate(),
+    {
+      commitment: "finalized",
+    },
+    TOKEN_2022_PROGRAM_ID
   );
 
   console.log("mint public key", mint.toBase58());
 
-  const info = await getMint(connection, mint);
+  const info = await getMint(
+    connection,
+    mint,
+    "finalized",
+    TOKEN_2022_PROGRAM_ID
+  );
   console.log("mint info : ", info);
 
   // this will create a new account for the token called ata
@@ -73,9 +84,15 @@ async function main() {
     connection,
     payer,
     mint,
-    payer.publicKey
+    payer.publicKey,
+    true,
+    "finalized",
+    {
+      commitment: "finalized",
+    },
+    TOKEN_2022_PROGRAM_ID
   );
-  console.log("current ata : ", current.address.toBase58());
+  console.log("current spl token account : ", current.address.toBase58());
 
   // then you can transfer the token to the ata
   const tx = await mintTo(
@@ -84,9 +101,22 @@ async function main() {
     mint,
     current.address,
     mint_pair,
-    1000000
+    1000000,
+    [],
+    {
+      commitment: "finalized",
+    },
+    TOKEN_2022_PROGRAM_ID
   );
   console.log(tx);
+
+  const mintAccount = await getMint(
+    connection,
+    mint,
+    "finalized",
+    TOKEN_2022_PROGRAM_ID
+  );
+  console.log(mintAccount);
 }
 
 main().catch((err) => {
